@@ -134,12 +134,12 @@ def main(argv):
     settings['days'] = 1
     settings['clean'] = False
     settings['dvrfailed'] = False
-    mansettings = ['smtp-server', 'smtp-port', 'smtp-user', 'smtp-pwd', 'send-to', 'send-from']
+    mansettings = ['smtp-server', 'smtp-port', 'smtp-user', 'smtp-pwd', 'send-to', 'send-from', 'tvh-server', 'tvh-user', 'tvh-pwd']
     body = None
 
     #-- process the arguments --#
     try:
-        opts, args = getopt.getopt(argv, 'cd:f', ['clean', 'days=', 'dvrfailed', 'smtp-server=', 'smtp-port=', 'smtp-user=', 'smtp-pwd=', 'send-to=', 'send-from='])
+        opts, args = getopt.getopt(argv, 'cd:f', ['clean', 'days=', 'dvrfailed', 'smtp-server=', 'smtp-port=', 'smtp-user=', 'smtp-pwd=', 'send-to=', 'send-from=', 'tvh-server=', 'tvh-user=', 'tvh-pwd='])
     except getopt.GetoptError:
         sys.exit('Invalid arguments')
 
@@ -162,14 +162,20 @@ def main(argv):
             settings['send-from'] = arg
         if opt in ('--send-to'):
             settings['send-to'] = arg
+        if opt in ('--tvh-server'):
+            settings['tvh-server'] = arg
+        if opt in ('--tvh-user'):
+            settings['tvh-user'] = arg
+        if opt in ('--tvh-pwd'):
+            settings['tvh-pwd'] = arg
 
-    regexMan = re.compile("^(send|smtp)-.*")
+    regexMan = re.compile("^(send|smtp|tvh)-.*")
     manargs = filter(regexMan.search, settings)
     blnContinue = True if len(manargs) == len(mansettings) else False
     if not blnContinue:
-        sys.exit('You must provide SMTP details including from and to addresses')
+        sys.exit('You must provide SMTP details including from and to addresses and a TVH server')
 
-    tvhRest = Rest('192.168.123.241', 'pyScript', 'pyScript')
+    tvhRest = Rest(settings['tvh-server'], settings['tvh-user'], settings['tvh-pwd'])
     tvhServices = Services(tvhRest)
     tvhNewServices = tvhServices.getNew(settings['days'])
     if tvhNewServices:
